@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier3d::prelude::*;
 use rand::Rng;
+use yurei::prelude::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -12,37 +14,6 @@ pub struct Enemy;
 pub struct EnemyStats {
     enemy_count: u8,
     max_enemy_count: u8,
-}
-
-#[derive(Component, Default)]
-pub struct Movement {
-    pub target: Option<Vec3>,
-    pub current_speed: f32,
-    pub top_speed: f32,
-    pub acceleration: f32,
-    pub deceleration: f32,
-}
-
-impl Movement {
-    fn decelerate(&mut self, delta: f32) {
-        self.current_speed =
-            self.current_speed + (0.0 - self.current_speed) * delta * self.deceleration;
-    }
-
-    fn accelerate(&mut self, delta: f32) {
-        if self.current_speed < self.top_speed {
-            self.current_speed = self.current_speed
-                + (self.top_speed - self.current_speed) * delta * self.acceleration;
-        }
-    }
-
-    pub fn update(&mut self, delta: f32) {
-        if let Some(_) = self.target {
-            self.accelerate(delta);
-        } else {
-            self.decelerate(delta);
-        }
-    }
 }
 
 impl EnemyStats {
@@ -70,6 +41,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::default())
+        .add_plugin(YureiPlugin)
+        .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(EnemyStats::default())
         .add_startup_system(setup_world)
         .add_system(
@@ -82,8 +55,6 @@ fn main() {
             },
         )
         .add_system(handle_player_movement_input)
-        .add_system(handle_speed)
-        .add_system(handle_movement.after(handle_speed))
         .run();
 }
 
@@ -105,22 +76,21 @@ fn setup_world(
             transform: Transform::from_xyz(0.0, -1.0, 0.0),
             ..default()
         })
-        .insert(Player);
+        .insert(Collider::cuboid(100.0, 0.1, 100.0))
+        .insert(RigidBody::Fixed);
+
     // Spawn Player
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Capsule::default())),
             material: materials.add(Color::WHITE.into()),
-            transform: Transform::default(),
             ..default()
         })
-        .insert(Player)
-        .insert(Movement {
-            top_speed: 10.0,
-            acceleration: 0.75,
-            deceleration: 3.5,
+        .insert(YureiBundle {
+            collider: Collider::capsule_y(0.5, 0.5),
             ..default()
-        });
+        })
+        .insert(Player);
 }
 
 fn spawn_enemy(
@@ -137,37 +107,16 @@ fn spawn_enemy(
         let mut rng = rand::thread_rng();
         let x: f32 = (rng.gen::<f32>() * 20.0) - 10.0;
         let z: f32 = (rng.gen::<f32>() * 20.0) - 10.0;
-        let transform = Transform::from_xyz(x, 0.0, z);
 
         commands
             .spawn(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Capsule::default())),
                 material: materials.add(Color::BLACK.into()),
-                transform,
                 ..default()
             })
+            .insert(YureiBundle::capsule_with_position(Vec3::new(x, 0.0, z)))
             .insert(Enemy);
         enemy_stats.add_enemy();
-    }
-}
-
-fn handle_speed(time: Res<Time>, mut query: Query<&mut Movement>) {
-    for mut movement in &mut query {
-        movement.update(time.delta_seconds());
-    }
-}
-
-fn handle_movement(time: Res<Time>, mut query: Query<(&mut Transform, &Movement)>) {
-    for (mut transform, movement) in &mut query {
-        if let Some(target) = movement.target {
-            let current_position = transform.translation;
-            transform.look_at(current_position + target, Vec3::Y);
-        }
-
-        if movement.current_speed > 0.0 {
-            let forward_vector = transform.forward().normalize();
-            transform.translation += forward_vector * movement.current_speed * time.delta_seconds();
-        }
     }
 }
 
@@ -211,10 +160,6 @@ fn handle_player_movement_input(
 
         let final_vec = left_vec + forward_vec;
 
-        movement.target = if final_vec != Vec3::ZERO {
-            Some(final_vec)
-        } else {
-            None
-        };
+        movement.direction = final_vec;
     }
 }
