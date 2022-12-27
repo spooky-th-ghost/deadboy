@@ -4018,9 +4018,9 @@ checksum = "a67300977d3dc3f8034dae89778f502b6ba20b269527b3223ba59c0cf393bb8a"
 
 [[package]]
 name = "yurei"
-version = "0.2.22"
+version = "0.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8626772139f6bb4d4e415a3476b3dca30df53c396da7e90ae8157070fbb1766e"
+checksum = "6132795c72466cd932541cc4fcd38687199519a52db14dbbc0cab7d34b1a63c5"
 dependencies = [
  "bevy",
  "bevy_rapier3d",
