@@ -21,19 +21,23 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::default())
-        .add_plugin(YureiPlugin)
+        .add_plugin(YureiPluginWithState(AppState::Gameplay))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(EnemyStats::default())
+        .add_state(AppState::StartMenu)
         .add_startup_system(setup_world)
-        .add_system(
-            move |cmd: Commands,
-                  time: Res<Time>,
-                  enemy_stats: ResMut<EnemyStats>,
-                  meshes: ResMut<Assets<Mesh>>,
-                  materials: ResMut<Assets<StandardMaterial>>| {
-                spawn_enemy(cmd, enemy_stats, meshes, materials, time, &mut spawn_timer)
-            },
+        .add_system_set(
+            SystemSet::on_update(AppState::Gameplay)
+                .with_system(
+                    move |cmd: Commands,
+                          time: Res<Time>,
+                          enemy_stats: ResMut<EnemyStats>,
+                          meshes: ResMut<Assets<Mesh>>,
+                          materials: ResMut<Assets<StandardMaterial>>| {
+                        spawn_enemy(cmd, enemy_stats, meshes, materials, time, &mut spawn_timer)
+                    },
+                )
+                .with_system(handle_player_movement_input),
         )
-        .add_system(handle_player_movement_input)
         .run();
 }

@@ -4,4 +4,5 @@ pub enum AppState {
     PauseMenu,
     LevelUpMenu,
     Gameplay,
+    LoadScreen,
 }
