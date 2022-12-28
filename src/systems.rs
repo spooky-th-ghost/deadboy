@@ -61,6 +61,7 @@ pub fn spawn_enemy(
                 ..default()
             })
             .insert(YureiBundle::capsule_with_position(Vec3::new(x, 0.0, z)))
+            .insert(Sensor)
             .insert(Enemy);
         enemy_stats.add_enemy();
     }

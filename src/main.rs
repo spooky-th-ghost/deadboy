@@ -24,7 +24,7 @@ fn main() {
         .add_plugin(YureiPluginWithState(AppState::Gameplay))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(EnemyStats::default())
-        .add_state(AppState::StartMenu)
+        .add_state(AppState::Gameplay)
         .add_startup_system(setup_world)
         .add_system_set(
             SystemSet::on_update(AppState::Gameplay)
