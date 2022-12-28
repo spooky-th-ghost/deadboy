@@ -60,7 +60,11 @@ pub fn spawn_enemy(
                 material: materials.add(Color::BLACK.into()),
                 ..default()
             })
-            .insert(YureiBundle::capsule_with_position(Vec3::new(x, 0.0, z)))
+            .insert(YureiBundle {
+                transform: Transform::from_xyz(x, 0.0, z),
+                collider: Collider::capsule_y(0.5, 1.0),
+                ..default()
+            })
             .insert(Sensor)
             .insert(Enemy);
         enemy_stats.add_enemy();
@@ -109,4 +113,8 @@ pub fn handle_player_movement_input(
 
         movement.direction = final_vec;
     }
+}
+
+pub fn handle_autoattacks(inventory: Res<PlayerInventory>, query: Query<&Transform, With<Player>>) {
+    for transform in &query {}
 }

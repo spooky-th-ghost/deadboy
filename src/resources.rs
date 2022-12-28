@@ -53,6 +53,20 @@ impl PlayerInventory {
         self.items.iter().position(|x| x.item_type == item_type)
     }
 
+    pub fn get_weapons(&self) -> Vec<&Item> {
+        self.items
+            .iter()
+            .filter(|x| x.category == ItemCategory::Weapon)
+            .collect::<Vec<&Item>>()
+    }
+
+    pub fn get_support_items(&self) -> Vec<&Item> {
+        self.items
+            .iter()
+            .filter(|x| x.category == ItemCategory::Support)
+            .collect::<Vec<&Item>>()
+    }
+
     pub fn add_item(&mut self, item_type: ItemType) {
         // Check if we have this item in our inventory or not
         if let Some(index) = self.item_position_in_inventory(item_type) {
