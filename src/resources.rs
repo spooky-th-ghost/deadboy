@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 #[derive(Resource)]
 pub struct EnemyStats {
@@ -25,6 +26,7 @@ impl Default for EnemyStats {
     }
 }
 
+#[derive(Resource)]
 pub struct PlayerInventory {
     pub items: Vec<Item>,
     pub possible_items: Vec<ItemType>,
@@ -158,5 +160,59 @@ impl ItemCategory {
             Halo | Scythe | Lantern => ItemCategory::Weapon,
             _ => ItemCategory::Support,
         }
+    }
+}
+
+pub struct LevelUpPickup {
+    pub item_options: Vec<ItemType>,
+}
+
+impl LevelUpPickup {
+    pub fn new(possible_items: &Vec<ItemType>) -> Self {
+        let mut temp_vec = possible_items.clone();
+        let mut item_options: Vec<ItemType> = Vec::new();
+
+        let max_choices = std::cmp::min(possible_items.len(), 3);
+
+        while item_options.len() < max_choices {
+            let index = rand::thread_rng().gen_range(0..temp_vec.len());
+            item_options.push(temp_vec[index]);
+            temp_vec.remove(index);
+        }
+
+        LevelUpPickup { item_options }
+    }
+}
+
+#[derive(Resource)]
+pub struct PlayerHealth {
+    pub health: u16,
+}
+
+#[derive(Resource)]
+pub struct PlayerExperience {
+    pub current_experience: u16,
+    pub current_level: u8,
+}
+
+impl PlayerExperience {
+    fn next_level(&self) -> u16 {
+        if self.current_level == 0 {
+            100
+        } else {
+            self.current_level as u16 * 75
+        }
+    }
+
+    pub fn add_xp(&mut self, amount: u16) {
+        self.current_experience += amount;
+        if self.current_experience >= self.next_level() {
+            self.level_up();
+        }
+    }
+
+    fn level_up(&mut self) {
+        self.current_level += 1;
+        self.current_experience = 0;
     }
 }
