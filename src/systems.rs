@@ -1,13 +1,15 @@
-use crate::{components::*, resources::*};
+use crate::{components::*, resources::*, traits::*};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::Rng;
+use std::time::Duration;
 use yurei::prelude::*;
 
 pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    inventory: Res<PlayerInventory>,
 ) {
     // Spawn camera
     commands.spawn(Camera3dBundle {
@@ -25,6 +27,7 @@ pub fn setup_world(
         .insert(Collider::cuboid(100.0, 0.1, 100.0))
         .insert(RigidBody::Fixed);
 
+    let weapons = inventory.get_weapons();
     // Spawn Player
     commands
         .spawn(PbrBundle {
@@ -36,7 +39,27 @@ pub fn setup_world(
             collider: Collider::capsule_y(0.5, 0.5),
             ..default()
         })
-        .insert(Player);
+        .insert(Player)
+        .with_children(|parent| {
+            for weapon in weapons.iter() {
+                match weapon.item_type {
+                    ItemType::Halo => {
+                        parent
+                            .spawn(SpatialBundle::default())
+                            .insert(RigidBody::KinematicPositionBased)
+                            .insert(Sensor)
+                            .insert(Collider::cylinder(0.1, 3.0))
+                            .insert(Halo)
+                            .insert(PlayerHitbox {
+                                damage: Halo::damage_by_level(weapon.level)
+                                    .auto_attack_damage
+                                    .base_damage,
+                            });
+                    }
+                    _ => (),
+                }
+            }
+        });
 }
 
 pub fn spawn_enemy(
@@ -115,6 +138,17 @@ pub fn handle_player_movement_input(
     }
 }
 
-pub fn handle_autoattacks(inventory: Res<PlayerInventory>, query: Query<&Transform, With<Player>>) {
-    for transform in &query {}
+pub fn handle_enemy_hitstun(time: Res<Time>, mut query: Query<&mut EnemyHealth>) {
+    for mut e_health in &mut query {
+        if e_health.in_hitstun {
+            e_health
+                .hitstun_timer
+                .tick(Duration::from_secs_f32(time.delta_seconds()));
+
+            if e_health.hitstun_timer.just_finished() {
+                e_health.in_hitstun = false;
+                e_health.hitstun_timer.reset();
+            }
+        }
+    }
 }

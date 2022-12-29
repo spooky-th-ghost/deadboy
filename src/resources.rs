@@ -1,6 +1,13 @@
 use bevy::prelude::*;
 use rand::Rng;
 
+#[derive(Resource, Default)]
+pub struct WeaponEntities {
+    pub halo: Option<Entity>,
+    pub scythe: Option<Entity>,
+    pub lantern: Option<Entity>,
+}
+
 #[derive(Resource)]
 pub struct EnemyStats {
     enemy_count: u8,
@@ -121,6 +128,26 @@ impl PlayerInventory {
     }
 }
 
+impl Default for PlayerInventory {
+    fn default() -> Self {
+        let items = vec![Item::new(ItemType::Halo)];
+        let possible_items = vec![
+            ItemType::Halo,
+            ItemType::Scythe,
+            ItemType::Lantern,
+            ItemType::Cloak,
+            ItemType::Boots,
+            ItemType::Pocketwatch,
+            ItemType::Monocle,
+        ];
+
+        PlayerInventory {
+            items,
+            possible_items,
+        }
+    }
+}
+
 pub struct Item {
     pub level: u8,
     pub item_type: ItemType,
@@ -131,16 +158,17 @@ impl Item {
     pub fn new(item_type: ItemType) -> Self {
         let category = ItemCategory::from_item_type(item_type);
         Item {
-            level: 0,
+            level: 1,
             item_type,
             category,
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Reflect)]
+#[derive(Clone, Copy, PartialEq, Eq, Reflect, Default)]
 pub enum ItemType {
     // Weapons
+    #[default]
     Halo,
     Scythe,
     Lantern,

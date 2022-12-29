@@ -15,6 +15,9 @@ pub use systems::*;
 pub mod utility;
 pub use utility::*;
 
+pub mod traits;
+pub use traits::*;
+
 fn main() {
     let mut spawn_timer = Timer::from_seconds(2.0, TimerMode::Repeating);
 
@@ -24,6 +27,8 @@ fn main() {
         .add_plugin(YureiPluginWithState(AppState::Gameplay))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(EnemyStats::default())
+        .insert_resource(WeaponEntities::default())
+        .insert_resource(PlayerInventory::default())
         .add_state(AppState::Gameplay)
         .add_startup_system(setup_world)
         .add_system_set(
@@ -37,7 +42,8 @@ fn main() {
                         spawn_enemy(cmd, enemy_stats, meshes, materials, time, &mut spawn_timer)
                     },
                 )
-                .with_system(handle_player_movement_input),
+                .with_system(handle_player_movement_input)
+                .with_system(handle_enemy_hitstun),
         )
         .run();
 }
