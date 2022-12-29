@@ -50,6 +50,7 @@ pub fn setup_world(
                             .insert(Sensor)
                             .insert(Collider::cylinder(0.1, 3.0))
                             .insert(Halo)
+                            .insert(ActiveEvents::COLLISION_EVENTS)
                             .insert(PlayerHitbox {
                                 damage: Halo::damage_by_level(weapon.level)
                                     .auto_attack_damage
@@ -88,7 +89,10 @@ pub fn spawn_enemy(
                 collider: Collider::capsule_y(0.5, 1.0),
                 ..default()
             })
+            .insert(EnemyHealth::default())
             .insert(Sensor)
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(Name::new("Enemy".to_string()))
             .insert(Enemy);
         enemy_stats.add_enemy();
     }
@@ -138,16 +142,41 @@ pub fn handle_player_movement_input(
     }
 }
 
-pub fn handle_enemy_hitstun(time: Res<Time>, mut query: Query<&mut EnemyHealth>) {
-    for mut e_health in &mut query {
-        if e_health.in_hitstun {
-            e_health
-                .hitstun_timer
-                .tick(Duration::from_secs_f32(time.delta_seconds()));
+pub fn handle_enemy_hitstun(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut EnemyHitstun)>,
+) {
+    for (entity, mut e_hitstun) in &mut query {
+        e_hitstun.tick(Duration::from_secs_f32(time.delta_seconds()));
+        if e_hitstun.just_finished() {
+            commands.entity(entity).remove::<EnemyHitstun>();
+        }
+    }
+}
 
-            if e_health.hitstun_timer.just_finished() {
-                e_health.in_hitstun = false;
-                e_health.hitstun_timer.reset();
+pub fn handle_enemy_hitbox_collision(
+    mut commands: Commands,
+    rapier_context: Res<RapierContext>,
+    player_query: Query<(Entity, &PlayerHitbox, &GlobalTransform)>,
+    mut enemy_query: Query<
+        (Entity, &Transform, &mut EnemyHealth, &mut ExternalImpulse),
+        Without<EnemyHitstun>,
+    >,
+) {
+    for (e_entity, e_transform, mut e_health, mut external_impulse) in &mut enemy_query {
+        for (p_entity, p_hitbox, p_transform) in &player_query {
+            if rapier_context.intersection_pair(p_entity, e_entity) == Some(true) {
+                let direction = (e_transform.translation - p_transform.translation());
+                let flat_direction = Vec3::new(direction.x, 0.0, direction.z).normalize();
+                external_impulse.impulse = flat_direction * 10.0;
+
+                if e_health.health > p_hitbox.damage {
+                    e_health.health -= p_hitbox.damage;
+                    commands.entity(e_entity).insert(EnemyHitstun::new(0.75));
+                } else {
+                    commands.entity(e_entity).despawn_recursive();
+                }
             }
         }
     }

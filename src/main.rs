@@ -43,7 +43,8 @@ fn main() {
                     },
                 )
                 .with_system(handle_player_movement_input)
-                .with_system(handle_enemy_hitstun),
+                .with_system(handle_enemy_hitstun)
+                .with_system(handle_enemy_hitbox_collision.after(handle_enemy_hitstun)),
         )
         .run();
 }

@@ -1,5 +1,6 @@
 use crate::traits::*;
 use bevy::prelude::*;
+use std::time::Duration;
 
 #[derive(Component)]
 pub struct Player;
@@ -45,16 +46,27 @@ pub enum Pickup {
 #[derive(Component)]
 pub struct EnemyHealth {
     pub health: u16,
-    pub hitstun_timer: Timer,
-    pub in_hitstun: bool,
 }
 
 impl Default for EnemyHealth {
     fn default() -> Self {
-        EnemyHealth {
-            health: 10,
-            hitstun_timer: Timer::from_seconds(0.33, TimerMode::Once),
-            in_hitstun: false,
-        }
+        EnemyHealth { health: 10 }
+    }
+}
+
+#[derive(Component)]
+pub struct EnemyHitstun(Timer);
+
+impl EnemyHitstun {
+    pub fn new(duration: f32) -> Self {
+        EnemyHitstun(Timer::from_seconds(duration, TimerMode::Once))
+    }
+
+    pub fn tick(&mut self, duration: Duration) {
+        self.0.tick(duration);
+    }
+
+    pub fn just_finished(&self) -> bool {
+        self.0.just_finished()
     }
 }
