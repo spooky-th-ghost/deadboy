@@ -12,10 +12,12 @@ pub fn setup_world(
     inventory: Res<PlayerInventory>,
 ) {
     // Spawn camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    commands
+        .spawn(Camera3dBundle {
+            transform: Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..default()
+        })
+        .insert(CameraController::default());
 
     commands
         .spawn(PbrBundle {
@@ -63,6 +65,49 @@ pub fn setup_world(
         });
 }
 
+pub fn handle_camera_movement(
+    player_ground_position: Res<PlayerGroundPosition>,
+    time: Res<Time>,
+    mut query: Query<(&CameraController, &mut Transform)>,
+) {
+    let (camera_controller, mut transform) = query.single_mut();
+    let desired_position = player_ground_position.get() + Vec3::splat(camera_controller.distance);
+
+    transform.translation = transform.translation.lerp(
+        desired_position,
+        time.delta_seconds() * camera_controller.easing,
+    );
+    let player_pos = player_ground_position.get();
+    transform.look_at(
+        Vec3::new(player_pos.x, player_pos.y, player_pos.z),
+        Vec3::ONE,
+    );
+}
+
+pub fn update_camera_target_position(
+    mut camera_query: Query<&mut CameraController>,
+    player_ground_position: Res<PlayerGroundPosition>,
+) {
+    let mut camera = camera_query.single_mut();
+    camera.target_position = player_ground_position.get()
+        + Vec3::new(camera.distance, camera.distance * 1.5, camera.distance);
+    camera.player_position = player_ground_position.get();
+}
+
+pub fn lerp_to_camera_position(
+    time: Res<Time>,
+    mut camera_query: Query<(&mut Transform, &CameraController)>,
+) {
+    for (mut transform, camera_controller) in &mut camera_query {
+        let lerped_position = transform.translation.lerp(
+            camera_controller.target_position,
+            time.delta_seconds() * camera_controller.easing,
+        );
+        transform.translation = lerped_position;
+        transform.look_at(camera_controller.player_position, Vec3::Y);
+    }
+}
+
 pub fn spawn_enemy(
     mut commands: Commands,
     mut enemy_stats: ResMut<EnemyStats>,
@@ -95,6 +140,15 @@ pub fn spawn_enemy(
             .insert(Name::new("Enemy".to_string()))
             .insert(Enemy);
         enemy_stats.add_enemy();
+    }
+}
+
+pub fn update_player_ground_position(
+    mut player_ground_position: ResMut<PlayerGroundPosition>,
+    query: Query<&Transform, With<Player>>,
+) {
+    for transform in &query {
+        player_ground_position.set(transform.translation);
     }
 }
 
@@ -142,6 +196,17 @@ pub fn handle_player_movement_input(
     }
 }
 
+pub fn handle_enemy_movement(
+    player_ground_position: Res<PlayerGroundPosition>,
+    mut query: Query<(&Transform, &mut Movement), With<Enemy>>,
+) {
+    for (transform, mut movement) in &mut query {
+        let mut new_dir = player_ground_position.get() - transform.translation;
+        new_dir.y = 0.0;
+        movement.direction = new_dir;
+    }
+}
+
 pub fn handle_enemy_hitstun(
     time: Res<Time>,
     mut commands: Commands,
@@ -167,9 +232,9 @@ pub fn handle_enemy_hitbox_collision(
     for (e_entity, e_transform, mut e_health, mut external_impulse) in &mut enemy_query {
         for (p_entity, p_hitbox, p_transform) in &player_query {
             if rapier_context.intersection_pair(p_entity, e_entity) == Some(true) {
-                let direction = (e_transform.translation - p_transform.translation());
+                let direction = e_transform.translation - p_transform.translation();
                 let flat_direction = Vec3::new(direction.x, 0.0, direction.z).normalize();
-                external_impulse.impulse = flat_direction * 10.0;
+                external_impulse.impulse = flat_direction * 150.0;
 
                 if e_health.health > p_hitbox.damage {
                     e_health.health -= p_hitbox.damage;

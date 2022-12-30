@@ -9,6 +9,25 @@ pub struct WeaponEntities {
 }
 
 #[derive(Resource)]
+pub struct PlayerGroundPosition(Vec3);
+
+impl PlayerGroundPosition {
+    pub fn get(&self) -> Vec3 {
+        self.0
+    }
+
+    pub fn set(&mut self, position: Vec3) {
+        self.0 = Vec3::new(position.x, 0.0, position.z);
+    }
+}
+
+impl Default for PlayerGroundPosition {
+    fn default() -> Self {
+        PlayerGroundPosition(Vec3::ZERO)
+    }
+}
+
+#[derive(Resource)]
 pub struct EnemyStats {
     enemy_count: u8,
     max_enemy_count: u8,

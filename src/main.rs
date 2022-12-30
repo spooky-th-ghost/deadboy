@@ -29,6 +29,7 @@ fn main() {
         .insert_resource(EnemyStats::default())
         .insert_resource(WeaponEntities::default())
         .insert_resource(PlayerInventory::default())
+        .insert_resource(PlayerGroundPosition::default())
         .add_state(AppState::Gameplay)
         .add_startup_system(setup_world)
         .add_system_set(
@@ -42,8 +43,12 @@ fn main() {
                         spawn_enemy(cmd, enemy_stats, meshes, materials, time, &mut spawn_timer)
                     },
                 )
+                .with_system(update_player_ground_position)
                 .with_system(handle_player_movement_input)
+                .with_system(handle_enemy_movement)
                 .with_system(handle_enemy_hitstun)
+                .with_system(update_camera_target_position.after(update_player_ground_position))
+                .with_system(lerp_to_camera_position.after(update_camera_target_position))
                 .with_system(handle_enemy_hitbox_collision.after(handle_enemy_hitstun)),
         )
         .run();

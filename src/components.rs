@@ -54,6 +54,27 @@ impl Default for EnemyHealth {
     }
 }
 
+#[derive(Reflect, Component)]
+#[reflect(Component)]
+pub struct CameraController {
+    pub distance: f32,
+    pub angle: f32,
+    pub easing: f32,
+    pub target_position: Vec3,
+    pub player_position: Vec3,
+}
+
+impl Default for CameraController {
+    fn default() -> Self {
+        CameraController {
+            distance: 15.0,
+            angle: 0.0,
+            easing: 6.0,
+            target_position: Vec3::ZERO,
+            player_position: Vec3::ZERO,
+        }
+    }
+}
 #[derive(Component)]
 pub struct EnemyHitstun(Timer);
 
