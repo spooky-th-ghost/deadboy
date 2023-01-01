@@ -1,4 +1,4 @@
-use crate::{components::*, resources::*, traits::*};
+use crate::{components::*, resources::*, traits::*, AppState};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::Rng;
@@ -137,6 +137,7 @@ pub fn spawn_enemy(
             .insert(EnemyHealth::default())
             .insert(Sensor)
             .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(EnemyHitbox { damage: 5 })
             .insert(Name::new("Enemy".to_string()))
             .insert(Enemy);
         enemy_stats.add_enemy();
@@ -207,15 +208,15 @@ pub fn handle_enemy_movement(
     }
 }
 
-pub fn handle_enemy_hitstun(
+pub fn handle_hitstun(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &mut EnemyHitstun)>,
+    mut query: Query<(Entity, &mut Hitstun)>,
 ) {
     for (entity, mut e_hitstun) in &mut query {
         e_hitstun.tick(Duration::from_secs_f32(time.delta_seconds()));
         if e_hitstun.just_finished() {
-            commands.entity(entity).remove::<EnemyHitstun>();
+            commands.entity(entity).remove::<Hitstun>();
         }
     }
 }
@@ -226,7 +227,7 @@ pub fn handle_enemy_hitbox_collision(
     player_query: Query<(Entity, &PlayerHitbox, &GlobalTransform)>,
     mut enemy_query: Query<
         (Entity, &Transform, &mut EnemyHealth, &mut ExternalImpulse),
-        Without<EnemyHitstun>,
+        Without<Hitstun>,
     >,
 ) {
     for (e_entity, e_transform, mut e_health, mut external_impulse) in &mut enemy_query {
@@ -238,11 +239,38 @@ pub fn handle_enemy_hitbox_collision(
 
                 if e_health.health > p_hitbox.damage {
                     e_health.health -= p_hitbox.damage;
-                    commands.entity(e_entity).insert(EnemyHitstun::new(0.75));
+                    commands.entity(e_entity).insert(Hitstun::new(0.75));
                 } else {
                     commands.entity(e_entity).despawn_recursive();
                 }
             }
         }
+    }
+}
+
+pub fn handle_player_hitbox_collision(
+    mut commands: Commands,
+    mut player_health: ResMut<PlayerHealth>,
+    rapier_context: Res<RapierContext>,
+    enemy_query: Query<(Entity, &EnemyHitbox)>,
+    player_query: Query<Entity, (Without<Hitstun>, With<Player>)>,
+) {
+    for p_entity in &player_query {
+        for (e_entity, e_hitbox) in &enemy_query {
+            if rapier_context.intersection_pair(p_entity, e_entity) == Some(true) {
+                if e_hitbox.damage < player_health.health {
+                    player_health.health -= e_hitbox.damage;
+                    commands.entity(p_entity).insert(Hitstun::new(0.5));
+                } else {
+                    player_health.health = 0;
+                }
+            }
+        }
+    }
+}
+
+pub fn kill_player(player_health: Res<PlayerHealth>, mut app_state: ResMut<State<AppState>>) {
+    if player_health.health == 0 {
+        app_state.set(AppState::DeathMenu).unwrap();
     }
 }

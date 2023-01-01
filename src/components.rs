@@ -13,6 +13,11 @@ pub struct PlayerHitbox {
     pub damage: u16,
 }
 
+#[derive(Component)]
+pub struct EnemyHitbox {
+    pub damage: u16,
+}
+
 // Weapon Markers
 #[derive(Component)]
 pub struct Halo;
@@ -76,11 +81,11 @@ impl Default for CameraController {
     }
 }
 #[derive(Component)]
-pub struct EnemyHitstun(Timer);
+pub struct Hitstun(Timer);
 
-impl EnemyHitstun {
+impl Hitstun {
     pub fn new(duration: f32) -> Self {
-        EnemyHitstun(Timer::from_seconds(duration, TimerMode::Once))
+        Hitstun(Timer::from_seconds(duration, TimerMode::Once))
     }
 
     pub fn tick(&mut self, duration: Duration) {

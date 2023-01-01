@@ -2,6 +2,7 @@
 pub enum AppState {
     StartMenu,
     PauseMenu,
+    DeathMenu,
     LevelUpMenu,
     Gameplay,
     LoadScreen,
