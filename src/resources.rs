@@ -1,6 +1,13 @@
 use bevy::prelude::*;
 use rand::Rng;
 
+#[derive(Resource)]
+pub struct MyUiAssets {
+    pub font: Handle<Font>,
+    pub button: Handle<Image>,
+    pub button_pressed: Handle<Image>,
+}
+
 #[derive(Resource, Default)]
 pub struct WeaponEntities {
     pub halo: Option<Entity>,

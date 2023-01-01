@@ -18,6 +18,9 @@ pub use utility::*;
 pub mod traits;
 pub use traits::*;
 
+pub mod menus;
+pub use menus::*;
+
 fn main() {
     let mut spawn_timer = Timer::from_seconds(2.0, TimerMode::Repeating);
 
@@ -33,6 +36,8 @@ fn main() {
         .insert_resource(PlayerHealth { health: 100 })
         .add_state(AppState::Gameplay)
         .add_startup_system(setup_world)
+        .add_startup_system(load_menu_assets)
+        .add_startup_system(setup_menu.after(load_menu_assets))
         .add_system_set(
             SystemSet::on_update(AppState::Gameplay)
                 .with_system(

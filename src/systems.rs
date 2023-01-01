@@ -5,6 +5,14 @@ use rand::Rng;
 use std::time::Duration;
 use yurei::prelude::*;
 
+pub fn load_menu_assets(mut commands: Commands, assets: Res<AssetServer>) {
+    let ui_assets = MyUiAssets {
+        font: assets.load("menu/FragmentMono-Regular.ttf"),
+        button: assets.load("menu/Text_Box.png"),
+        button_pressed: assets.load("menu/Pressed_Box.png"),
+    };
+    commands.insert_resource(ui_assets);
+}
 pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
