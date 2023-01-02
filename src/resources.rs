@@ -4,12 +4,12 @@ use rand::Rng;
 
 #[derive(AssetCollection, Resource)]
 pub struct AssetCache {
-    // #[asset(path = "menu/FragmentMono-Regular.ttf")]
-    // pub font: Handle<Font>,
+    #[asset(path = "menu/FragmentMono-Regular.ttf")]
+    pub font: Handle<Font>,
     #[asset(path = "box.png")]
     pub button: Handle<Image>,
-    // #[asset(path = "menu/Pressed_Box.png")]
-    // pub button_pressed: Handle<Image>,
+    #[asset(path = "menu/Pressed_Box.png")]
+    pub button_pressed: Handle<Image>,
 }
 
 #[derive(Resource)]
