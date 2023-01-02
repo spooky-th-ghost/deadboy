@@ -1,8 +1,8 @@
-use crate::MyUiAssets;
+use crate::resources::*;
 use bevy::prelude::*;
 pub struct DeathMenuPlugin;
 
-pub fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
+pub fn setup_menu(mut commands: Commands, asset_cache: Res<AssetCache>) {
     commands
         .spawn(ButtonBundle {
             style: Style {
@@ -24,7 +24,7 @@ pub fn setup_menu(mut commands: Commands, assets: Res<AssetServer>) {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                image: assets.load("menu/Text_Box.png").clone().into(),
+                image: asset_cache.button.clone().into(),
                 ..default()
             });
         });

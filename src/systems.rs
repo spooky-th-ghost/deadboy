@@ -5,14 +5,6 @@ use rand::Rng;
 use std::time::Duration;
 use yurei::prelude::*;
 
-pub fn load_menu_assets(mut commands: Commands, assets: Res<AssetServer>) {
-    let ui_assets = MyUiAssets {
-        font: assets.load("menu/FragmentMono-Regular.ttf"),
-        button: assets.load("menu/Text_Box.png"),
-        button_pressed: assets.load("menu/Pressed_Box.png"),
-    };
-    commands.insert_resource(ui_assets);
-}
 pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -122,11 +114,11 @@ pub fn spawn_enemy(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     time: Res<Time>,
-    spawn_timer: &mut Timer,
+    mut enemy_spawn_timer: ResMut<EnemySpawnTimer>,
 ) {
-    spawn_timer.tick(time.delta());
+    enemy_spawn_timer.spawn_timer.tick(time.delta());
 
-    if spawn_timer.just_finished() && enemy_stats.can_spawn_enemy() {
+    if enemy_spawn_timer.spawn_timer.just_finished() && enemy_stats.can_spawn_enemy() {
         let mut rng = rand::thread_rng();
         let x: f32 = (rng.gen::<f32>() * 20.0) - 10.0;
         let z: f32 = (rng.gen::<f32>() * 20.0) - 10.0;

@@ -1,11 +1,27 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use rand::Rng;
 
-#[derive(Resource)]
-pub struct MyUiAssets {
-    pub font: Handle<Font>,
+#[derive(AssetCollection, Resource)]
+pub struct AssetCache {
+    // #[asset(path = "menu/FragmentMono-Regular.ttf")]
+    // pub font: Handle<Font>,
+    #[asset(path = "box.png")]
     pub button: Handle<Image>,
-    pub button_pressed: Handle<Image>,
+    // #[asset(path = "menu/Pressed_Box.png")]
+    // pub button_pressed: Handle<Image>,
+}
+
+#[derive(Resource)]
+pub struct EnemySpawnTimer {
+    pub spawn_timer: Timer,
+}
+
+impl Default for EnemySpawnTimer {
+    fn default() -> Self {
+        let spawn_timer = Timer::from_seconds(2.0, TimerMode::Repeating);
+        EnemySpawnTimer { spawn_timer }
+    }
 }
 
 #[derive(Resource, Default)]

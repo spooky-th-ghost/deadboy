@@ -7,4 +7,5 @@ pub enum AppState {
     LevelUpMenu,
     Gameplay,
     LoadScreen,
+    AssetLoading,
 }
