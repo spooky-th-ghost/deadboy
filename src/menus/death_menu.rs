@@ -8,7 +8,7 @@ pub fn setup_death_menu(mut commands: Commands, asset_cache: Res<MenuAssets>) {
             style: Style {
                 align_self: AlignSelf::Center,
                 align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+                justify_content: JustifyContent::SpaceBetween,
                 size: Size::new(Val::Percent(90.0), Val::Percent(80.0)),
                 margin: UiRect::all(Val::Auto),
                 ..default()
@@ -19,7 +19,8 @@ pub fn setup_death_menu(mut commands: Commands, asset_cache: Res<MenuAssets>) {
         .with_children(|parent| {
             parent.spawn(ImageBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    size: Size::new(Val::Percent(90.0), Val::Percent(100.0)),
+                    margin: UiRect::horizontal(Val::Percent(4.0)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -29,7 +30,8 @@ pub fn setup_death_menu(mut commands: Commands, asset_cache: Res<MenuAssets>) {
             });
             parent.spawn(ImageBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    size: Size::new(Val::Percent(90.0), Val::Percent(100.0)),
+                    margin: UiRect::horizontal(Val::Percent(4.0)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -39,7 +41,8 @@ pub fn setup_death_menu(mut commands: Commands, asset_cache: Res<MenuAssets>) {
             });
             parent.spawn(ImageBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    size: Size::new(Val::Percent(90.0), Val::Percent(100.0)),
+                    margin: UiRect::horizontal(Val::Percent(4.0)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
