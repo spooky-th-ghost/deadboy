@@ -24,31 +24,29 @@ pub use menus::*;
 
 fn main() {
     App::new()
+        .add_plugins(DefaultPlugins)
         .add_loading_state(
             LoadingState::new(AppState::AssetLoading)
                 .continue_to_state(AppState::Gameplay)
-                .with_collection::<AssetCache>(),
+                .with_dynamic_collections::<StandardDynamicAssetCollection>(vec!["deadboy.assets"])
+                .with_collection::<MenuAssets>(),
         )
-        .add_plugins(DefaultPlugins)
+        .add_state(AppState::AssetLoading)
         .add_plugin(WorldInspectorPlugin::default())
         .add_plugin(YureiPluginWithState(AppState::Gameplay))
         .add_plugin(RapierDebugRenderPlugin::default())
-        .add_state(AppState::AssetLoading)
         .insert_resource(EnemyStats::default())
         .insert_resource(WeaponEntities::default())
         .insert_resource(PlayerInventory::default())
         .insert_resource(PlayerGroundPosition::default())
         .insert_resource(EnemySpawnTimer::default())
-        .insert_resource(PlayerHealth { health: 100 })
+        .insert_resource(PlayerHealth { health: 10 })
         .add_system_set(
             SystemSet::on_update(AppState::Gameplay)
                 .with_system(spawn_enemy)
                 .with_system(update_player_ground_position)
                 .with_system(handle_player_movement_input)
-                .with_system(handle_enemy_movement),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::Gameplay)
+                .with_system(handle_enemy_movement)
                 .with_system(handle_hitstun)
                 .with_system(update_camera_target_position.after(update_player_ground_position))
                 .with_system(lerp_to_camera_position.after(update_camera_target_position))
@@ -56,10 +54,7 @@ fn main() {
                 .with_system(handle_player_hitbox_collision)
                 .with_system(kill_player.after(handle_player_hitbox_collision)),
         )
-        .add_system_set(
-            SystemSet::on_enter(AppState::Gameplay)
-                .with_system(setup_world)
-                .with_system(setup_menu),
-        )
+        .add_system_set(SystemSet::on_enter(AppState::Gameplay).with_system(setup_world))
+        .add_system_set(SystemSet::on_enter(AppState::DeathMenu).with_system(setup_death_menu))
         .run();
 }

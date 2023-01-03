@@ -3,12 +3,12 @@ use bevy_asset_loader::prelude::*;
 use rand::Rng;
 
 #[derive(AssetCollection, Resource)]
-pub struct AssetCache {
-    #[asset(path = "menu/FragmentMono-Regular.ttf")]
-    pub font: Handle<Font>,
-    #[asset(path = "box.png")]
+pub struct MenuAssets {
+    #[asset(key = "menu.font")]
+    pub menu_font: Handle<Font>,
+    #[asset(key = "menu.box")]
     pub button: Handle<Image>,
-    #[asset(path = "menu/Pressed_Box.png")]
+    #[asset(key = "menu.box_selected")]
     pub button_pressed: Handle<Image>,
 }
 

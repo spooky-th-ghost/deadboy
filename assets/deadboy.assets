@@ -1,0 +1,11 @@
+({
+	"menu.font": File (
+		path: "menu/joystix_monospace.ttf" 
+	),
+	"menu.box": File (
+		path: "menu/box.png"
+	),
+	"menu.box_selected": File(
+		path: "menu/Pressed_Box.png"
+	),
+})
