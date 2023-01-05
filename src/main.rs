@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
+use kayak_ui::{prelude::*, widgets::*};
 use yurei::prelude::*;
 
 pub mod components;
@@ -24,7 +25,9 @@ pub use menus::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugin(KayakContextPlugin)
+        .add_plugin(KayakWidgets)
         .add_loading_state(
             LoadingState::new(AppState::AssetLoading)
                 .continue_to_state(AppState::Gameplay)
