@@ -23,6 +23,9 @@ pub use traits::*;
 pub mod menus;
 pub use menus::*;
 
+pub mod macros;
+pub use macros::*;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -43,7 +46,7 @@ fn main() {
         .insert_resource(PlayerInventory::default())
         .insert_resource(PlayerGroundPosition::default())
         .insert_resource(EnemySpawnTimer::default())
-        .insert_resource(PlayerHealth { health: 10 })
+        .insert_resource(PlayerHealth::new(10))
         .add_system_set(
             SystemSet::on_update(AppState::Gameplay)
                 .with_system(spawn_enemy)
@@ -57,7 +60,11 @@ fn main() {
                 .with_system(handle_player_hitbox_collision)
                 .with_system(kill_player.after(handle_player_hitbox_collision)),
         )
-        .add_system_set(SystemSet::on_enter(AppState::Gameplay).with_system(setup_world))
+        .add_system_set(
+            SystemSet::on_enter(AppState::Gameplay)
+                .with_system(setup_world)
+                .with_system(setup_gameplay_hud),
+        )
         .add_system_set(SystemSet::on_enter(AppState::DeathMenu).with_system(setup_death_menu))
         .run();
 }

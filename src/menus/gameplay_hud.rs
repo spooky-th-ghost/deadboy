@@ -1,13 +1,13 @@
-use crate::{AppState, KBundle};
+use crate::{AppState, KBundle, PlayerHealth};
 use bevy::prelude::*;
 use kayak_ui::prelude::{widgets::*, *};
 
 #[derive(Component, Clone, PartialEq)]
-pub struct MyButtonProps {
+pub struct GameplayHudProps {
     app_state: AppState,
 }
 
-impl Default for MyButtonProps {
+impl Default for GameplayHudProps {
     fn default() -> Self {
         Self {
             app_state: AppState::Gameplay,
@@ -15,24 +15,26 @@ impl Default for MyButtonProps {
     }
 }
 
-impl Widget for MyButtonProps {}
+impl Widget for GameplayHudProps {}
 
-KBundle!(MyButtonBundle, MyButtonProps);
+KBundle!(GameplayHudBundle, GameplayHudProps);
 
-pub fn my_button_render(
+pub fn gameplay_hud_render(
     In((mut widget_context, entity)): In<(KayakWidgetContext, Entity)>,
     mut commands: Commands,
     mut query: Query<&KChildren>,
+    player_health: Res<PlayerHealth>,
 ) -> bool {
     let parent_id = Some(entity);
 
+    let health_percentage = player_health.current_health as f32 / player_health.max_health as f32;
     if let Ok(children) = query.get(entity) {
         let background_styles = KStyle {
             layout_type: StyleProp::Value(LayoutType::Row),
             background_color: StyleProp::Value(Color::RED),
             border_radius: Corner::all(50.0).into(),
-            width: StyleProp::Value(Units::Pixels(500.0)),
-            height: StyleProp::Value(Units::Pixels(500.0)),
+            width: StyleProp::Value(Units::Pixels(500.0 * health_percentage)),
+            height: StyleProp::Value(Units::Pixels(50.0)),
             ..Default::default()
         };
 
@@ -47,7 +49,7 @@ pub fn my_button_render(
     true
 }
 
-pub fn setup_death_menu(
+pub fn setup_gameplay_hud(
     mut commands: Commands,
     mut font_mapping: ResMut<FontMapping>,
     asset_server: Res<AssetServer>,
@@ -58,42 +60,18 @@ pub fn setup_death_menu(
     widget_context.add_plugin(KayakWidgetsContextPlugin);
     let parent_id = None;
 
-    widget_context.add_widget_data::<MyButtonProps, EmptyState>();
+    widget_context.add_widget_data::<GameplayHudProps, EmptyState>();
 
     widget_context.add_widget_system(
-        MyButtonProps::default().get_name(),
-        widget_update::<MyButtonProps, EmptyState>,
-        my_button_render,
+        GameplayHudProps::default().get_name(),
+        widget_update::<GameplayHudProps, EmptyState>,
+        gameplay_hud_render,
     );
 
     rsx! {
         <KayakAppBundle>
-            <MyButtonBundle>
-                <TextWidgetBundle
-                    text={TextProps {
-                        content: "First Option".into(),
-                        size: 40.0,
-                        ..Default::default()
-                    }}
-
-                />
-                <TextWidgetBundle
-                    text={TextProps {
-                        content: "Second Option".into(),
-                        size: 40.0,
-                        ..Default::default()
-                    }}
-
-                />
-                <TextWidgetBundle
-                    text={TextProps {
-                        content: "Thrid Option".into(),
-                        size: 40.0,
-                        ..Default::default()
-                    }}
-
-                />
-            </MyButtonBundle>
+            <GameplayHudBundle>
+            </GameplayHudBundle>
         </KayakAppBundle>
     };
 

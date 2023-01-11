@@ -258,11 +258,11 @@ pub fn handle_player_hitbox_collision(
     for p_entity in &player_query {
         for (e_entity, e_hitbox) in &enemy_query {
             if rapier_context.intersection_pair(p_entity, e_entity) == Some(true) {
-                if e_hitbox.damage < player_health.health {
-                    player_health.health -= e_hitbox.damage;
+                if e_hitbox.damage < player_health.current_health {
+                    player_health.current_health -= e_hitbox.damage;
                     commands.entity(p_entity).insert(Hitstun::new(0.5));
                 } else {
-                    player_health.health = 0;
+                    player_health.current_health = 0;
                 }
             }
         }
@@ -270,7 +270,7 @@ pub fn handle_player_hitbox_collision(
 }
 
 pub fn kill_player(player_health: Res<PlayerHealth>, mut app_state: ResMut<State<AppState>>) {
-    if player_health.health == 0 {
+    if player_health.current_health == 0 {
         app_state.set(AppState::DeathMenu).unwrap();
     }
 }

@@ -270,7 +270,17 @@ impl LevelUpPickup {
 
 #[derive(Resource)]
 pub struct PlayerHealth {
-    pub health: u16,
+    pub current_health: u16,
+    pub max_health: u16,
+}
+
+impl PlayerHealth {
+    pub fn new(health: u16) -> Self {
+        Self {
+            current_health: health,
+            max_health: health,
+        }
+    }
 }
 
 #[derive(Resource)]
