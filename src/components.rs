@@ -9,6 +9,9 @@ pub struct Player;
 pub struct Enemy;
 
 #[derive(Component)]
+pub struct HealthBarFill;
+
+#[derive(Component)]
 pub struct PlayerHitbox {
     pub damage: u16,
 }
