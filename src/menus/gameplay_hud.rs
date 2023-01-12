@@ -11,6 +11,41 @@ impl Plugin for GameplayHudPlugin {
 }
 
 pub fn spawn_gameplay_hud(mut commands: Commands) {
+    let healthbar_border = ImageBundle {
+        style: Style {
+            size: Size::new(Val::Percent(35.0), Val::Percent(12.5)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        background_color: BackgroundColor(Color::BLACK),
+        ..default()
+    };
+
+    let healthbar_background = ImageBundle {
+        style: Style {
+            size: Size::new(Val::Percent(99.5), Val::Percent(90.0)),
+            margin: UiRect::horizontal(Val::Percent(4.0)),
+            justify_content: JustifyContent::FlexStart,
+            align_items: AlignItems::FlexStart,
+            flex_direction: FlexDirection::Row,
+            //border: UiRect::all(Val::Px(50.0)),
+            ..default()
+        },
+        background_color: BackgroundColor(Color::GRAY),
+        ..default()
+    };
+
+    let healthbar_fill = ImageBundle {
+        style: Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            align_self: AlignSelf::FlexStart,
+            ..default()
+        },
+        background_color: BackgroundColor(Color::RED),
+        ..default()
+    };
+
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -25,32 +60,13 @@ pub fn spawn_gameplay_hud(mut commands: Commands) {
             ..default()
         })
         .with_children(|parent| {
-            parent
-                .spawn(ImageBundle {
-                    style: Style {
-                        size: Size::new(Val::Percent(30.0), Val::Percent(10.0)),
-                        margin: UiRect::horizontal(Val::Percent(4.0)),
-                        justify_content: JustifyContent::FlexStart,
-                        align_items: AlignItems::FlexStart,
-                        flex_direction: FlexDirection::Row,
-                        ..default()
-                    },
-                    background_color: BackgroundColor(Color::GRAY),
-                    ..default()
-                })
-                .with_children(|s_parent| {
-                    s_parent
-                        .spawn(ImageBundle {
-                            style: Style {
-                                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                                align_self: AlignSelf::FlexStart,
-                                ..default()
-                            },
-                            background_color: BackgroundColor(Color::RED),
-                            ..default()
-                        })
-                        .insert(HealthBarFill);
-                });
+            parent.spawn(healthbar_border).with_children(|s_parent| {
+                s_parent
+                    .spawn(healthbar_background)
+                    .with_children(|z_parent| {
+                        z_parent.spawn(healthbar_fill).insert(HealthBarFill);
+                    });
+            });
         });
 }
 
